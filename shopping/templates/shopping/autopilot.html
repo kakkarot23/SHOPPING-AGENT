@@ -1,0 +1,81 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}🏆 Flagship: AI Shopping Autopilot Agent{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="grid-template-columns: 340px 1fr; gap:28px;">
+
+    <!-- Create New Autopilot Task -->
+    <div class="glass-card">
+        <h3 style="font-size:1.1rem; font-weight:600; color:#fff; margin-bottom:14px;"><i class="fa-solid fa-paper-plane" style="color:var(--primary-cyan);"></i> Launch New Autopilot</h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">
+            Set an intent and budget. The AI will monitor price trends over 30 days and alert you at the optimal buy window.
+        </p>
+
+        <form method="POST" action="{% url 'autopilot' %}" style="display:flex; flex-direction:column; gap:14px;">
+            {% csrf_token %}
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Shopping Query Intent</label>
+                <textarea name="query_prompt" rows="3" class="form-control" placeholder="e.g. Find me the best laptop for programming under ₹80,000. Tell me when to buy.">Find me the best laptop for programming and gaming under ₹80,000. Monitor prices for 30 days.</textarea>
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Max Target Budget (₹)</label>
+                <input type="number" name="max_budget" value="80000" class="form-control" />
+            </div>
+            <button type="submit" class="btn-glow" style="width:100%; justify-content:center; margin-top:6px;"><i class="fa-solid fa-rocket"></i> Activate Autopilot Agent</button>
+        </form>
+    </div>
+
+    <!-- Active Autopilot Tasks Dashboard -->
+    <div>
+        <div style="margin-bottom:20px;">
+            <h2 style="font-size:1.2rem; font-weight:700; color:#fff;">Active Autopilot Monitors ({{ tasks|length }})</h2>
+            <span style="font-size:0.85rem; color:var(--text-muted);">Real-time background price scanning and deal detection</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            {% for task in tasks %}
+            <div class="glass-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                    <div>
+                        <span class="badge badge-overall" style="margin-bottom:6px;">Status: {{ task.get_status_display }}</span>
+                        <h3 style="font-size:1.1rem; font-weight:700; color:#fff;">"{{ task.query_prompt }}"</h3>
+                    </div>
+                    <span class="badge badge-{% if task.buy_recommendation == 'BUY_NOW' %}value{% else %}performance{% endif %}" style="font-size:0.85rem;">
+                        {{ task.buy_recommendation }}
+                    </span>
+                </div>
+
+                {% if task.recommended_product %}
+                <div style="display:flex; align-items:center; gap:16px; background:rgba(0,0,0,0.3); padding:12px; border-radius:8px; margin-bottom:14px;">
+                    <img src="{{ task.recommended_product.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;" alt="{{ task.recommended_product.title }}" />
+                    <div style="flex:1;">
+                        <strong style="color:#fff; font-size:0.9rem;">Target Product: {{ task.recommended_product.title }}</strong>
+                        <div style="font-size:0.8rem; color:var(--primary-cyan);">Current Price: ₹{{ task.recommended_product.base_price|floatformat:0 }} (Max Budget: ₹{{ task.max_budget|floatformat:0 }})</div>
+                    </div>
+                    <a href="{% url 'product_detail' task.recommended_product.slug %}" class="btn-outline" style="padding:4px 10px; font-size:0.75rem;">View Deal</a>
+                </div>
+                {% endif %}
+
+                <!-- Task History Log -->
+                <div style="font-size:0.8rem; color:var(--text-muted);">
+                    <strong style="color:var(--text-main); display:block; margin-bottom:6px;"><i class="fa-solid fa-list-ul"></i> Agent Activity Log:</strong>
+                    <ul style="margin-left:16px; display:flex; flex-direction:column; gap:4px;">
+                        {% for log in task.log_history %}
+                        <li>[{{ log.timestamp }}] {{ log.event }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% empty %}
+            <div class="glass-card" style="text-align:center; padding:40px;">
+                <i class="fa-solid fa-paper-plane" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:12px;"></i>
+                <h3>No active Autopilot monitors found.</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-top:6px;">Launch your first Autopilot agent using the left form!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

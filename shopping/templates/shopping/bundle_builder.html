@@ -1,0 +1,79 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}🧩 Smart Bundle Builder & Budget Optimizer{% endblock %}
+
+{% block content %}
+<div style="display:flex; flex-direction:column; gap:28px;">
+
+    <!-- Budget Allocator Header Controls -->
+    <div class="glass-card">
+        <form method="POST" action="{% url 'bundle_builder' %}" style="display:grid; grid-template-columns: 2fr 1.5fr 1fr; gap:20px; align-items:end;">
+            {% csrf_token %}
+            <div>
+                <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:6px;">Target Setup Category</label>
+                <select name="setup_type" class="form-control">
+                    <option value="wfh" {% if setup_type == 'wfh' %}selected{% endif %}>Complete Work-From-Home Setup (Laptop + Monitor + Peripherals + Audio)</option>
+                    <option value="gadget_trio" {% if setup_type == 'gadget_trio' %}selected{% endif %}>Gadget Trio (Smartphone + Smartwatch + Wireless Earbuds)</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:6px;">Total Available Budget (₹)</label>
+                <input type="number" name="budget" value="{{ total_budget|floatformat:0 }}" class="form-control" />
+            </div>
+            <button type="submit" class="btn-glow" style="height:42px; justify-content:center;"><i class="fa-solid fa-calculator"></i> Optimize Setup</button>
+        </form>
+    </div>
+
+    <!-- AI Optimization Summary Banner -->
+    <div class="glass-card" style="background:linear-gradient(135deg, rgba(0,242,254,0.1), rgba(127,0,255,0.1)); border:1px solid var(--border-highlight);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+            <div>
+                <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">AI Allocation Report</span>
+                <h2 style="font-size:1.5rem; font-weight:800; color:#fff; font-family:var(--font-heading);">
+                    Total Setup Cost: ₹{{ bundle_data.spent_total|floatformat:0 }}
+                </h2>
+                <p style="font-size:0.9rem; color:var(--accent-emerald); margin-top:4px;">
+                    {{ bundle_data.ai_suggestion }}
+                </p>
+            </div>
+            <div style="display:flex; gap:20px; text-align:right;">
+                <div>
+                    <span style="font-size:0.8rem; color:var(--text-muted); display:block;">Specified Limit</span>
+                    <strong style="color:#fff; font-size:1.1rem;">₹{{ bundle_data.total_budget|floatformat:0 }}</strong>
+                </div>
+                <div>
+                    <span style="font-size:0.8rem; color:var(--text-muted); display:block;">Remaining Surplus</span>
+                    <strong style="color:var(--primary-cyan); font-size:1.1rem;">₹{{ bundle_data.remaining_budget|floatformat:0 }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optimized Bundle Items Grid -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+        <h3 style="font-size:1.1rem; font-weight:600; color:#fff;"><i class="fa-solid fa-list-check" style="color:var(--primary-cyan);"></i> Component Breakdown</h3>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            {% for item in bundle_data.items %}
+            <div class="glass-card" style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px;">
+                <div style="display:flex; align-items:center; gap:20px;">
+                    <img src="{{ item.product.image_url }}" style="width:70px; height:70px; object-fit:cover; border-radius:8px;" alt="{{ item.product.title }}" />
+                    <div>
+                        <span class="badge badge-overall" style="margin-bottom:4px;">{{ item.role }}</span>
+                        <h4 style="font-size:1rem; font-weight:600; color:#fff; margin:2px 0;">{{ item.product.title }}</h4>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">{{ item.reason }}</div>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:1.2rem; font-weight:700; color:var(--primary-cyan); font-family:var(--font-heading);">
+                        ₹{{ item.actual_price|floatformat:0 }}
+                    </div>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">Target: ₹{{ item.allocated_budget|floatformat:0 }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

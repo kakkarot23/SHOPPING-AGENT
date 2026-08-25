@@ -1,0 +1,114 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}🔍 AI Product Search & Ranking Catalog{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="grid-template-columns: 280px 1fr; gap:28px;">
+
+    <!-- Filters & AI Preference Sliders Sidebar -->
+    <aside style="display:flex; flex-direction:column; gap:20px;">
+        <div class="glass-card">
+            <h3 style="font-size:1rem; font-weight:600; margin-bottom:14px; color:#fff;"><i class="fa-solid fa-filter" style="color:var(--primary-cyan);"></i> Search Filters</h3>
+            <form method="GET" action="{% url 'product_list' %}" style="display:flex; flex-direction:column; gap:14px;">
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:6px;">Natural Query</label>
+                    <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="e.g. lightweight laptop" />
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:6px;">Category</label>
+                    <select name="category" class="form-control">
+                        <option value="">All Categories</option>
+                        {% for c in categories %}
+                        <option value="{{ c.slug }}" {% if request.GET.category == c.slug %}selected{% endif %}>{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:6px;">Max Budget (₹)</label>
+                    <input type="number" name="max_price" value="{{ request.GET.max_price }}" class="form-control" placeholder="e.g. 80000" />
+                </div>
+                <button type="submit" class="btn-glow" style="width:100%; justify-content:center; margin-top:6px;"><i class="fa-solid fa-rotate"></i> Apply Filters</button>
+            </form>
+        </div>
+
+        <!-- Preference Sliders for Custom Match Score Algorithm -->
+        <div class="glass-card">
+            <h3 style="font-size:1rem; font-weight:600; margin-bottom:14px; color:#fff;"><i class="fa-solid fa-sliders" style="color:var(--accent-purple);"></i> Match Priorities</h3>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px;">Adjust algorithm weights to recalculate scores live:</p>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
+                        <span>Performance</span> <strong style="color:var(--primary-cyan);">25%</strong>
+                    </div>
+                    <input type="range" min="0" max="50" value="25" style="width:100%; accent-color:var(--primary-cyan);" />
+                </div>
+                <div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
+                        <span>Price & Value</span> <strong style="color:var(--accent-emerald);">20%</strong>
+                    </div>
+                    <input type="range" min="0" max="50" value="20" style="width:100%; accent-color:var(--accent-emerald);" />
+                </div>
+                <div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
+                        <span>User Reviews</span> <strong style="color:#FFD700;">20%</strong>
+                    </div>
+                    <input type="range" min="0" max="50" value="20" style="width:100%; accent-color:#FFD700;" />
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Results Grid -->
+    <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+                <h2 style="font-size:1.2rem; font-weight:700; color:#fff;">
+                    {% if query %}Results for "{{ query }}"{% else %}All Products Catalog{% endif %}
+                </h2>
+                <span style="font-size:0.85rem; color:var(--text-muted);">Showing {{ scored_products|length }} products ranked by AI Match Engine</span>
+            </div>
+            <a href="{% url 'compare' %}" class="btn-outline"><i class="fa-solid fa-scale-balanced"></i> Compare Selected</a>
+        </div>
+
+        <div class="grid-3">
+            {% for item in scored_products %}
+            <div class="product-card">
+                <div class="product-thumb">
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.title }}">
+                    {% if item.badge %}
+                    <div class="product-badge-float">
+                        <span class="badge {{ item.badge_class }}">{{ item.badge }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-title">{{ item.product.title }}</div>
+                    <div class="product-meta">
+                        <span><i class="fa-solid fa-star" style="color:#FFD700;"></i> {{ item.product.rating }}</span>
+                        <span class="score-pill">AI Score: {{ item.score }}/100</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+                        Category: {{ item.product.category.name }} | {{ item.product.brand.name }}
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto;">
+                        <div class="product-price">₹{{ item.effective_price|floatformat:0 }}</div>
+                        <div style="display:flex; gap:6px;">
+                            <button onclick="toggleWishlist('{{ item.product.id }}', this)" class="btn-outline" style="padding:6px 10px;"><i class="fa-regular fa-heart"></i></button>
+                            <a href="{% url 'product_detail' item.product.slug %}" class="btn-glow" style="padding:6px 12px; font-size:0.8rem;">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="glass-card" style="grid-column: span 3; text-align:center; padding:40px;">
+                <i class="fa-solid fa-box-open" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:12px;"></i>
+                <h3>No products matched your exact filter.</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-top:6px;">Try broadening your query or budget range.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

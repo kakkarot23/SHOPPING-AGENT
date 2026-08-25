@@ -1,0 +1,86 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}⚖️ AI Multi-Product Spec & Value Comparison{% endblock %}
+
+{% block content %}
+<div style="display:flex; flex-direction:column; gap:24px;">
+
+    <!-- AI Verdict Summary Card -->
+    <div class="glass-card" style="border-left: 4px solid var(--primary-cyan);">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+            <i class="fa-solid fa-scale-balanced" style="font-size:1.4rem; color:var(--primary-cyan);"></i>
+            <h3 style="font-size:1.15rem; font-weight:700; color:#fff;">AI Verdict & Value Recommendation</h3>
+        </div>
+        <p style="font-size:0.95rem; color:var(--text-main); line-height:1.5;">
+            {{ verdict|safe }}
+        </p>
+    </div>
+
+    <!-- Products Header Cards -->
+    <div class="glass-card">
+        <h3 style="font-size:1rem; font-weight:600; color:#fff; margin-bottom:16px;">Comparing {{ products|length }} Products</h3>
+
+        <div style="overflow-x:auto;">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th style="width:200px;">Product</th>
+                        {% for p in products %}
+                        <th style="text-align:center;">
+                            <img src="{{ p.image_url }}" style="height:90px; object-fit:cover; border-radius:8px; margin-bottom:8px;" alt="{{ p.title }}"><br>
+                            <a href="{% url 'product_detail' p.slug %}" style="color:#fff; font-weight:600; text-decoration:none;">{{ p.title }}</a>
+                            <div style="font-size:0.8rem; color:var(--primary-cyan); margin-top:4px;">
+                                ₹{% if p.lowest_offer %}{{ p.lowest_offer.effective_price|floatformat:0 }}{% else %}{{ p.base_price|floatformat:0 }}{% endif %}
+                            </div>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Rating & Reviews</strong></td>
+                        {% for p in products %}
+                        <td style="text-align:center; color:#FFD700; font-weight:bold;">
+                            {{ p.rating }}★ ({{ p.review_count }})
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Brand & Category</strong></td>
+                        {% for p in products %}
+                        <td style="text-align:center; color:var(--text-muted);">
+                            {{ p.brand.name }} | {{ p.category.name }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% for row in grid %}
+                    <tr>
+                        <td><strong>{{ row.spec_key }}</strong></td>
+                        {% for val in row.values %}
+                        <td style="text-align:center; color:var(--text-main);">{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td><strong>Return & Warranty</strong></td>
+                        {% for p in products %}
+                        <td style="text-align:center; color:var(--text-muted);">
+                            {{ p.return_window_days }} Days Return | {{ p.warranty_months }} Mo Warranty
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Actions</strong></td>
+                        {% for p in products %}
+                        <td style="text-align:center;">
+                            <button onclick="addToCart('{{ p.id }}', this)" class="btn-glow" style="padding:6px 12px; font-size:0.8rem;">Select Product</button>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

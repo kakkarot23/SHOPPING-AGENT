@@ -1,0 +1,91 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}🎁 AI Gift Finder Wizard{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="grid-template-columns: 320px 1fr; gap:28px;">
+
+    <!-- Wizard Questions Form -->
+    <div class="glass-card">
+        <h3 style="font-size:1.1rem; font-weight:600; color:#fff; margin-bottom:14px;"><i class="fa-solid fa-gift" style="color:var(--accent-pink);"></i> Find Perfect Gift</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">Answer 4 simple questions for tailored AI gift ideas:</p>
+
+        <form method="POST" action="{% url 'gift_finder' %}" style="display:flex; flex-direction:column; gap:14px;">
+            {% csrf_token %}
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Who is the gift for?</label>
+                <select name="who" class="form-control">
+                    <option value="Sister">Sister</option>
+                    <option value="Brother">Brother</option>
+                    <option value="Partner / Spouse">Partner / Spouse</option>
+                    <option value="Parents">Parents</option>
+                    <option value="Friend / Colleague">Friend / Colleague</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Recipient Age</label>
+                <input type="number" name="age" value="25" class="form-control" />
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Occasion</label>
+                <select name="occasion" class="form-control">
+                    <option value="Birthday">Birthday</option>
+                    <option value="Wedding">Wedding</option>
+                    <option value="Anniversary">Anniversary</option>
+                    <option value="Graduation">Graduation</option>
+                    <option value="Festival / Christmas">Festival / Christmas</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Gift Budget (₹)</label>
+                <input type="number" name="budget" value="5000" class="form-control" />
+            </div>
+            <div>
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Interests / Hobbies</label>
+                <input type="text" name="interests" value="Gaming + Fitness" class="form-control" />
+            </div>
+            <button type="submit" class="btn-glow" style="width:100%; justify-content:center; margin-top:8px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Gifts</button>
+        </form>
+    </div>
+
+    <!-- Recommendations Output -->
+    <div>
+        <div style="margin-bottom:20px;">
+            <h2 style="font-size:1.2rem; font-weight:700; color:#fff;">AI Gift Recommendations</h2>
+            <span style="font-size:0.85rem; color:var(--text-muted);">Selected for maximum recipient delight within specified budget</span>
+        </div>
+
+        {% if results %}
+        <div class="grid-2">
+            {% for item in results %}
+            <div class="product-card">
+                <div class="product-thumb">
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.title }}">
+                    <div class="product-badge-float">
+                        <span class="badge {{ item.badge_class }}">{{ item.badge|default:"Ideal Gift" }}</span>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <div class="product-title">{{ item.product.title }}</div>
+                    <div class="product-meta">
+                        <span><i class="fa-solid fa-star" style="color:#FFD700;"></i> {{ item.product.rating }}</span>
+                        <span class="score-pill">Match: {{ item.score }}/100</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto;">
+                        <div class="product-price">₹{{ item.effective_price|floatformat:0 }}</div>
+                        <a href="{% url 'product_detail' item.product.slug %}" class="btn-glow" style="padding:6px 12px; font-size:0.8rem;">Select Gift</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-card" style="text-align:center; padding:40px;">
+            <i class="fa-solid fa-gift" style="font-size:3rem; color:var(--accent-pink); margin-bottom:14px;"></i>
+            <h3>Fill out the 4 wizard questions to generate curated AI gifts!</h3>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

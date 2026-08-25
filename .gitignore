@@ -1,0 +1,15 @@
+# Python / Django gitignore
+*.pyc
+__pycache__/
+*.sqlite3
+*.db
+local_settings.py
+.env
+.venv
+env/
+venv/
+ENV/
+*.log
+.DS_Store
+.vscode/
+.idea/

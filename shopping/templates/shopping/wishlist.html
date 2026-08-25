@@ -1,0 +1,57 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}❤️ Smart Wishlist & Price Tracker{% endblock %}
+
+{% block content %}
+<div style="display:flex; flex-direction:column; gap:24px;">
+
+    <!-- Smart Wishlist AI Insights Banner -->
+    {% if insights %}
+    <div class="glass-card" style="border-left:4px solid var(--accent-emerald);">
+        <h3 style="font-size:1.05rem; font-weight:600; color:#fff; margin-bottom:8px;"><i class="fa-solid fa-bell" style="color:var(--accent-emerald);"></i> Smart Wishlist AI Price Insights</h3>
+        <ul style="margin-left:20px; font-size:0.9rem; color:var(--text-main);">
+            {% for insight in insights %}
+            <li>{{ insight|safe }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Wishlist Items Grid -->
+    <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <h2 style="font-size:1.2rem; font-weight:700; color:#fff;">{{ wishlist.title }} ({{ items|length }} Items)</h2>
+            <button class="btn-outline"><i class="fa-solid fa-share-nodes"></i> Share Wishlist</button>
+        </div>
+
+        <div class="grid-3">
+            {% for item in items %}
+            <div class="product-card">
+                <div class="product-thumb">
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.title }}" />
+                </div>
+                <div class="product-info">
+                    <div class="product-title">{{ item.product.title }}</div>
+                    <div class="product-meta">
+                        <span>Price when added: ₹{{ item.added_price|floatformat:0 }}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto;">
+                        <div class="product-price">₹{{ item.product.base_price|floatformat:0 }}</div>
+                        <div style="display:flex; gap:6px;">
+                            <button onclick="addToCart('{{ item.product.id }}', this)" class="btn-glow" style="padding:6px 12px; font-size:0.8rem;">Move to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="glass-card" style="grid-column: span 3; text-align:center; padding:40px;">
+                <i class="fa-regular fa-heart" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:12px;"></i>
+                <h3>Your wishlist is empty.</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-top:6px;">Save products while searching to monitor price drops automatically!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

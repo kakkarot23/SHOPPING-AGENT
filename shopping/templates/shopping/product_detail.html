@@ -1,0 +1,193 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}{{ product.title }}{% endblock %}
+
+{% block content %}
+<div style="display:flex; flex-direction:column; gap:28px;">
+
+    <!-- Top Product Header & Image Card -->
+    <div class="glass-card" style="display:grid; grid-template-columns: 360px 1fr; gap:32px;">
+        <div>
+            <img src="{{ product.image_url }}" style="width:100%; height:320px; object-fit:cover; border-radius:12px; border:1px solid var(--border-color);" alt="{{ product.title }}" />
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <span class="badge badge-overall">{{ product.brand.name }}</span>
+                    <span class="badge badge-value">{{ product.category.name }}</span>
+                    <span class="badge badge-budget">Sustainability: {{ product.sustainability_score }}/100</span>
+                </div>
+                <h2 style="font-size:1.6rem; font-weight:700; color:#fff; margin-bottom:8px;">{{ product.title }}</h2>
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:14px; font-size:0.9rem; color:var(--text-muted);">
+                    <span><i class="fa-solid fa-star" style="color:#FFD700;"></i> {{ product.rating }} ({{ product.review_count }} verified reviews)</span>
+                    <span><i class="fa-solid fa-rotate-left" style="color:var(--primary-cyan);"></i> {{ product.return_window_days }}-Day Returns</span>
+                    <span><i class="fa-solid fa-shield-halved" style="color:var(--accent-emerald);"></i> {{ product.warranty_months }} Months Warranty</span>
+                </div>
+                <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.5;">{{ product.description }}</p>
+            </div>
+
+            <!-- Price & Buy Box -->
+            <div style="background:rgba(0,0,0,0.3); padding:16px 20px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; margin-top:20px;">
+                <div>
+                    <span style="font-size:0.8rem; color:var(--text-muted); display:block;">Best Effective Price</span>
+                    <span style="font-size:1.8rem; font-weight:800; color:var(--primary-cyan); font-family:var(--font-heading);">
+                        ₹{% if best_offer %}{{ best_offer.effective_price|floatformat:0 }}{% else %}{{ product.base_price|floatformat:0 }}{% endif %}
+                    </span>
+                </div>
+                <div style="display:flex; gap:12px;">
+                    <button onclick="toggleWishlist('{{ product.id }}', this)" class="btn-outline"><i class="fa-regular fa-heart"></i> Save to Wishlist</button>
+                    <button onclick="addToCart('{{ product.id }}', this)" class="btn-glow"><i class="fa-solid fa-cart-shopping"></i> Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI "Buy or Wait?" Predictor & Price History Chart -->
+    <div class="grid-2">
+        <!-- AI Buy or Wait Intelligence Card -->
+        <div class="glass-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <h3 style="font-size:1.1rem; font-weight:600; color:#fff;"><i class="fa-solid fa-crystal-ball" style="color:var(--primary-cyan);"></i> AI "Buy or Wait?" Predictor</h3>
+                <span class="badge badge-{{ price_prediction.badge_color }}" style="font-size:0.85rem;">{{ price_prediction.recommendation }}</span>
+            </div>
+            <p style="font-size:0.9rem; color:var(--text-main); margin-bottom:16px; line-height:1.4;">
+                {{ price_prediction.explanation }}
+            </p>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; background:rgba(0,0,0,0.25); padding:12px; border-radius:10px; text-align:center;">
+                <div>
+                    <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Current Price</span>
+                    <strong style="color:var(--primary-cyan);">₹{{ price_prediction.current_price|floatformat:0 }}</strong>
+                </div>
+                <div>
+                    <span style="font-size:0.75rem; color:var(--text-muted); display:block;">30-Day Lowest</span>
+                    <strong style="color:var(--accent-emerald);">₹{{ price_prediction.lowest_price|floatformat:0 }}</strong>
+                </div>
+                <div>
+                    <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Drop Prob.</span>
+                    <strong style="color:#FFD700;">{{ price_prediction.drop_probability }}%</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price History Trend Chart -->
+        <div class="glass-card">
+            <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:12px; color:#fff;"><i class="fa-solid fa-chart-line" style="color:var(--primary-blue);"></i> 30-Day Price History Trend</h3>
+            <div style="height:160px;">
+                <canvas id="priceHistoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Intelligence & Seller Price Comparison -->
+    <div class="grid-2">
+        <!-- Review Intelligence -->
+        <div class="glass-card">
+            <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:14px; color:#fff;"><i class="fa-solid fa-brain" style="color:var(--accent-purple);"></i> AI Review Intelligence</h3>
+
+            <!-- Sentiment Bar -->
+            <div style="display:flex; height:10px; border-radius:5px; overflow:hidden; margin-bottom:16px;">
+                <div style="width:{{ review_insights.positive_pct }}%; background:var(--accent-emerald);" title="Positive {{ review_insights.positive_pct }}%"></div>
+                <div style="width:{{ review_insights.neutral_pct }}%; background:#FFD700;" title="Neutral {{ review_insights.neutral_pct }}%"></div>
+                <div style="width:{{ review_insights.negative_pct }}%; background:#FF0844;" title="Negative {{ review_insights.negative_pct }}%"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted); margin-bottom:18px;">
+                <span>Positive: {{ review_insights.positive_pct }}%</span>
+                <span>Neutral: {{ review_insights.neutral_pct }}%</span>
+                <span>Negative: {{ review_insights.negative_pct }}%</span>
+            </div>
+
+            {% if review_insights.trust_warning %}
+            <div style="padding:10px; background:rgba(255,8,68,0.15); border:1px solid rgba(255,8,68,0.3); border-radius:8px; font-size:0.85rem; color:#FF7597; margin-bottom:14px;">
+                {{ review_insights.trust_warning }}
+            </div>
+            {% endif %}
+
+            <div class="grid-2" style="gap:16px;">
+                <div style="background:rgba(0,245,160,0.05); padding:12px; border-radius:8px;">
+                    <strong style="font-size:0.85rem; color:var(--accent-emerald); display:block; margin-bottom:6px;">👍 AI Extracted Pros</strong>
+                    <ul style="font-size:0.8rem; color:var(--text-muted); margin-left:16px;">
+                        {% for pro in review_insights.pros %}
+                        <li>{{ pro }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div style="background:rgba(255,8,68,0.05); padding:12px; border-radius:8px;">
+                    <strong style="font-size:0.85rem; color:#FF7597; display:block; margin-bottom:6px;">👎 AI Extracted Cons</strong>
+                    <ul style="font-size:0.8rem; color:var(--text-muted); margin-left:16px;">
+                        {% for con in review_insights.cons %}
+                        <li>{{ con }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-Seller Price Engine -->
+        <div class="glass-card">
+            <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:14px; color:#fff;"><i class="fa-solid fa-store" style="color:var(--primary-cyan);"></i> Multi-Seller Price Comparison</h3>
+
+            <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                <thead>
+                    <tr style="border-bottom:1px solid var(--border-color); text-align:left; color:var(--text-muted);">
+                        <th style="padding:8px;">Seller</th>
+                        <th style="padding:8px;">List Price</th>
+                        <th style="padding:8px;">Discounts</th>
+                        <th style="padding:8px;">Effective</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for offer in seller_offers %}
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:10px 8px; color:#fff;">
+                            <strong>{{ offer.seller.name }}</strong>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">Rating: {{ offer.seller.rating }}★</div>
+                        </td>
+                        <td style="padding:10px 8px; color:var(--text-muted);">₹{{ offer.price|floatformat:0 }}</td>
+                        <td style="padding:10px 8px; color:var(--accent-emerald);">-₹{{ offer.coupon_discount|add:offer.bank_offer|floatformat:0 }}</td>
+                        <td style="padding:10px 8px; color:var(--primary-cyan); font-weight:bold;">₹{{ offer.effective_price|floatformat:0 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="padding:12px; text-align:center; color:var(--text-muted);">Base seller offer: ₹{{ product.base_price|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const rawHistory = JSON.parse('{{ price_history_json|safe }}');
+    const labels = rawHistory.map(h => h.date);
+    const data = rawHistory.map(h => h.price);
+
+    const ctx = document.getElementById('priceHistoryChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels.length ? labels : ['Aug 01', 'Aug 10', 'Aug 18', 'Today'],
+            datasets: [{
+                label: 'Effective Price (₹)',
+                data: data.length ? data : [{{ product.base_price }}, {{ product.base_price|add:"-1500" }}, {{ product.base_price }}, {{ product.base_price }}],
+                borderColor: '#00F2FE',
+                backgroundColor: 'rgba(0, 242, 254, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#94A3B8' } },
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8' } }
+            }
+        }
+    });
+</script>
+{% endblock %}

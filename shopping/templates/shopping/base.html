@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Personal Shopping Agent{% endblock %}</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js for Price History & Review Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Main Style -->
+    <link rel="stylesheet" href="{% static 'shopping/css/style.css' %}">
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+        <a href="{% url 'command_center' %}" class="brand-logo">
+            <div class="brand-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+            <span>SHOPPING<span style="color:var(--primary-cyan);">.AI</span></span>
+        </a>
+
+        <ul class="nav-menu">
+            <li><a href="{% url 'command_center' %}" class="nav-link {% if request.resolver_match.url_name == 'command_center' %}active{% endif %}"><i class="fa-solid fa-robot"></i> AI Command Center</a></li>
+            <li><a href="{% url 'product_list' %}" class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}"><i class="fa-solid fa-magnifying-glass"></i> AI Search & Catalog</a></li>
+            <li><a href="{% url 'compare' %}" class="nav-link {% if request.resolver_match.url_name == 'compare' %}active{% endif %}"><i class="fa-solid fa-scale-balanced"></i> Product Compare</a></li>
+            <li><a href="{% url 'bundle_builder' %}" class="nav-link {% if request.resolver_match.url_name == 'bundle_builder' %}active{% endif %}"><i class="fa-solid fa-layer-group"></i> Smart Bundle Builder</a></li>
+            <li><a href="{% url 'gift_finder' %}" class="nav-link {% if request.resolver_match.url_name == 'gift_finder' %}active{% endif %}"><i class="fa-solid fa-gift"></i> AI Gift Finder</a></li>
+            <li><a href="{% url 'visual_search' %}" class="nav-link {% if request.resolver_match.url_name == 'visual_search' %}active{% endif %}"><i class="fa-solid fa-camera"></i> Visual Image Search</a></li>
+            <li><a href="{% url 'autopilot' %}" class="nav-link {% if request.resolver_match.url_name == 'autopilot' %}active{% endif %}"><i class="fa-solid fa-paper-plane"></i> AI Autopilot</a></li>
+            <li><a href="{% url 'wishlist' %}" class="nav-link {% if request.resolver_match.url_name == 'wishlist' %}active{% endif %}"><i class="fa-regular fa-heart"></i> Smart Wishlist</a></li>
+            <li><a href="{% url 'cart' %}" class="nav-link {% if request.resolver_match.url_name == 'cart' %}active{% endif %}"><i class="fa-solid fa-basket-shopping"></i> AI Cart Assistant</a></li>
+            <li><a href="{% url 'analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i> Shopping Analytics</a></li>
+        </ul>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">JS</div>
+            <div style="flex:1; overflow:hidden;">
+                <div style="font-weight:600; font-size:0.9rem; color:#fff;">Jayesh S.</div>
+                <div style="font-size:0.75rem; color:var(--accent-emerald);">Saved ₹31,400</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Body -->
+    <main class="app-main">
+        <header class="top-navbar">
+            <h1 class="page-title">{% block page_title %}AI Personal Shopping Agent{% endblock %}</h1>
+            <div class="header-actions">
+                <a href="{% url 'autopilot' %}" class="btn-outline"><i class="fa-solid fa-bolt" style="color:var(--primary-cyan);"></i> Autopilot Active</a>
+                <a href="{% url 'cart' %}" class="btn-glow"><i class="fa-solid fa-cart-shopping"></i> My Cart</a>
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{% static 'shopping/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,93 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}🛒 AI Cart Assistant & Total Cost Calculator{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="grid-template-columns: 1fr 340px; gap:28px;">
+
+    <!-- Cart Items & Compatibility Warnings -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+        <!-- Compatibility Verification Box -->
+        <div class="glass-card" style="border-left: 4px solid {% if compatibility.is_compatible %}var(--accent-emerald){% else %}#FF0844{% endif %};">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                <i class="fa-solid fa-microchip" style="color:{% if compatibility.is_compatible %}var(--accent-emerald){% else %}#FF0844{% endif %}; font-size:1.3rem;"></i>
+                <h3 style="font-size:1.1rem; font-weight:700; color:#fff;">AI Hardware & Port Compatibility Check</h3>
+            </div>
+
+            {% if compatibility.warnings %}
+                {% for w in compatibility.warnings %}
+                <div style="padding:10px; background:rgba(255,8,68,0.15); border-radius:6px; color:#FF7597; font-size:0.85rem; margin-bottom:6px;">
+                    {{ w }}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="font-size:0.9rem; color:var(--accent-emerald);">
+                    ✓ All items in your cart are 100% hardware & port compatible with each other!
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Cart Items List -->
+        <div class="glass-card">
+            <h3 style="font-size:1.1rem; font-weight:600; color:#fff; margin-bottom:16px;">Cart Items ({{ items|length }})</h3>
+
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                {% for item in items %}
+                <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:14px; border-bottom:1px solid var(--border-color);">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <img src="{{ item.product.image_url }}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;" alt="{{ item.product.title }}" />
+                        <div>
+                            <h4 style="font-size:0.95rem; font-weight:600; color:#fff;">{{ item.product.title }}</h4>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">Quantity: {{ item.quantity }} | Brand: {{ item.product.brand.name }}</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:1.1rem; font-weight:700; color:var(--primary-cyan); font-family:var(--font-heading);">
+                            ₹{{ item.subtotal|floatformat:0 }}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align:center; padding:30px; color:var(--text-muted);">
+                    <i class="fa-solid fa-basket-shopping" style="font-size:2rem; margin-bottom:8px;"></i>
+                    <p>Your cart is empty.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Total Cost Calculator & Coupon Optimizer -->
+    <div class="glass-card" style="display:flex; flex-direction:column; gap:18px;">
+        <h3 style="font-size:1.1rem; font-weight:600; color:#fff;"><i class="fa-solid fa-receipt" style="color:var(--primary-cyan);"></i> Effective Cost Calculator</h3>
+
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:0.9rem;">
+            <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
+                <span>Items Subtotal</span>
+                <span>₹{{ total_effective|floatformat:0 }}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:var(--accent-emerald);">
+                <span>Auto Applied Coupon Savings</span>
+                <span>-₹{{ coupon_savings|floatformat:0 }}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
+                <span>Estimated Shipping & Delivery</span>
+                <span style="color:var(--accent-emerald);">FREE</span>
+            </div>
+            <div style="border-top:1px solid var(--border-color); padding-top:12px; margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color:#fff; font-size:1.1rem;">Effective Total Cost</strong>
+                <strong style="font-size:1.5rem; font-weight:800; color:var(--primary-cyan); font-family:var(--font-heading);">
+                    ₹{{ final_amount|floatformat:0 }}
+                </strong>
+            </div>
+        </div>
+
+        <button class="btn-glow" style="width:100%; justify-content:center; padding:14px; font-size:1rem; margin-top:8px;">
+            <i class="fa-solid fa-lock"></i> Authorize & Checkout
+        </button>
+    </div>
+
+</div>
+{% endblock %}

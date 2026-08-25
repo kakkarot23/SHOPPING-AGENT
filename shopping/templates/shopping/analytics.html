@@ -1,0 +1,55 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}📊 Personal Shopping Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div style="display:flex; flex-direction:column; gap:28px;">
+
+    <!-- Summary KPI Stat Cards -->
+    <div class="grid-4">
+        <div class="glass-card" style="border-top:3px solid var(--accent-emerald);">
+            <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Total Money Saved</span>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--accent-emerald); font-family:var(--font-heading); margin:6px 0;">
+                ₹{{ profile.saved_money_total|floatformat:0 }}
+            </div>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Saved via price drops & coupons</span>
+        </div>
+
+        <div class="glass-card" style="border-top:3px solid var(--primary-cyan);">
+            <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Completed Purchases</span>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--primary-cyan); font-family:var(--font-heading); margin:6px 0;">
+                {{ profile.total_purchases_count }}
+            </div>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Lifetime order history</span>
+        </div>
+
+        <div class="glass-card" style="border-top:3px solid var(--accent-purple);">
+            <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Wishlist Tracked</span>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--accent-purple); font-family:var(--font-heading); margin:6px 0;">
+                {{ wishlist_count }}
+            </div>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Monitored products</span>
+        </div>
+
+        <div class="glass-card" style="border-top:3px solid #FFD700;">
+            <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Active Price Alerts</span>
+            <div style="font-size:1.8rem; font-weight:800; color:#FFD700; font-family:var(--font-heading); margin:6px 0;">
+                {{ alerts_count }}
+            </div>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Target triggers active</span>
+        </div>
+    </div>
+
+    <!-- AI Analytics Insight Card -->
+    <div class="glass-card" style="background:rgba(0,242,254,0.04); border-left:4px solid var(--primary-cyan);">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+            <i class="fa-solid fa-lightbulb" style="color:var(--primary-cyan); font-size:1.2rem;"></i>
+            <h3 style="font-size:1.05rem; font-weight:600; color:#fff;">AI Intelligence Summary</h3>
+        </div>
+        <p style="font-size:0.9rem; color:var(--text-main);">
+            "You saved approximately <strong>₹{{ profile.saved_money_total|floatformat:0 }}</strong> over 12 orders by leveraging AI Price Alerts and waiting for optimal buy recommendations."
+        </p>
+    </div>
+
+</div>
+{% endblock %}

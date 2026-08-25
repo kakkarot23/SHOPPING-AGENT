@@ -1,0 +1,96 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}🤖 AI Shopping Command Center{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="grid-template-columns: 2fr 1fr; margin-bottom: 28px;">
+
+    <!-- Conversational AI Main Container -->
+    <div class="chat-container">
+        <div style="padding: 16px 20px; background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="width:10px; height:10px; border-radius:50%; background:var(--accent-emerald);"></span>
+                <strong style="color:#fff; font-size:0.95rem;">Shopping Intelligence Agent (Active)</strong>
+            </div>
+            <span style="font-size:0.8rem; color:var(--text-muted);">Intent -> Compare -> Recommend -> Autopilot</span>
+        </div>
+
+        <div class="chat-messages" id="chat-messages-container">
+            <div class="chat-bubble ai">
+                👋 Hello Jayesh! I am your <strong>AI Personal Shopping Agent</strong>.<br><br>
+                Instead of searching and filtering through thousands of listings manually, simply tell me what you need, your budget, and how you plan to use it!<br><br>
+                Try asking:
+                <ul style="margin-left: 20px; margin-top: 6px; font-size: 0.85rem; color: var(--primary-cyan);">
+                    <li>"Find me the best laptop under ₹80,000 for programming and gaming."</li>
+                    <li>"I need a wedding gift for my sister under ₹5,000."</li>
+                    <li>"I have ₹1 lakh for a phone, watch and earbuds."</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="chat-input-field" class="chat-input" placeholder="Type your intent (e.g. 'Find running shoes for daily use under ₹4,000')..." />
+            <button id="chat-send-btn" class="btn-glow"><i class="fa-solid fa-paper-plane"></i> Ask AI</button>
+        </div>
+    </div>
+
+    <!-- Quick Intent Prompts & Profile Insights Sidebar -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+        <div class="glass-card">
+            <h3 style="font-size:1.05rem; font-weight:600; margin-bottom:14px; color:#fff;"><i class="fa-solid fa-lightbulb" style="color:var(--primary-cyan);"></i> Quick Intent Prompts</h3>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                {% for prompt in sample_prompts %}
+                <button class="btn-outline" style="text-align:left; font-size:0.85rem; padding:10px;" onclick="useSamplePrompt('{{ prompt }}')">
+                    <i class="fa-regular fa-comments" style="color:var(--primary-blue);"></i> {{ prompt }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3 style="font-size:1.05rem; font-weight:600; margin-bottom:12px; color:#fff;"><i class="fa-solid fa-user-gear" style="color:var(--accent-purple);"></i> Shopping Personality</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.4;">
+                {{ profile.shopping_personality }}
+            </p>
+            <div style="margin-top:14px; padding:10px; background:rgba(0,242,254,0.06); border-radius:8px; font-size:0.8rem; color:var(--primary-cyan);">
+                <i class="fa-solid fa-sliders"></i> Priority Weights: Performance (25%), Price (20%), Reviews (20%)
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Top Scored Recommendations Grid -->
+<div style="margin-top: 10px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h2 style="font-size:1.3rem; font-weight:700; color:#fff;">🏆 Today's AI Best-Pick Recommendations</h2>
+        <a href="{% url 'product_list' %}" class="btn-outline" style="font-size:0.85rem;">View Full Catalog <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+
+    <div class="grid-4">
+        {% for item in top_recommendations %}
+        <div class="product-card">
+            <div class="product-thumb">
+                <img src="{{ item.product.image_url }}" alt="{{ item.product.title }}">
+                {% if item.badge %}
+                <div class="product-badge-float">
+                    <span class="badge {{ item.badge_class }}">{{ item.badge }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <div class="product-title">{{ item.product.title }}</div>
+                <div class="product-meta">
+                    <span><i class="fa-solid fa-star" style="color:#FFD700;"></i> {{ item.product.rating }} ({{ item.product.review_count }})</span>
+                    <span class="score-pill">AI Score: {{ item.score }}/100</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto;">
+                    <div class="product-price">₹{{ item.effective_price|floatformat:0 }}</div>
+                    <a href="{% url 'product_detail' item.product.slug %}" class="btn-outline" style="padding:6px 12px; font-size:0.8rem;">Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

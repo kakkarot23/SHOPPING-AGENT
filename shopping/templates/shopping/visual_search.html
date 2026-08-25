@@ -1,0 +1,68 @@
+{% extends 'shopping/base.html' %}
+
+{% block page_title %}📷 Visual Product Search & Style Matching{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="grid-template-columns: 340px 1fr; gap:28px;">
+
+    <!-- Image Upload Card -->
+    <div class="glass-card">
+        <h3 style="font-size:1.1rem; font-weight:600; color:#fff; margin-bottom:14px;"><i class="fa-solid fa-camera" style="color:var(--primary-cyan);"></i> Upload Product Image</h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">
+            Upload an image or photo of a sneaker, laptop, or outfit. The AI will extract visual attributes and retrieve exact or similar catalog items.
+        </p>
+
+        <form method="POST" action="{% url 'visual_search' %}" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:14px;">
+            {% csrf_token %}
+            <div style="border:2px dashed var(--border-color); border-radius:12px; padding:30px; text-align:center; background:rgba(0,0,0,0.2);">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size:2rem; color:var(--primary-cyan); margin-bottom:8px;"></i>
+                <div style="font-size:0.85rem; color:var(--text-main);">Click to browse or drop photo here</div>
+                <input type="file" name="image_file" style="margin-top:10px; font-size:0.8rem; color:var(--text-muted);" />
+            </div>
+            <button type="submit" class="btn-glow" style="width:100%; justify-content:center;"><i class="fa-solid fa-eye"></i> Analyze & Find Similar</button>
+        </form>
+    </div>
+
+    <!-- Visual Match Results -->
+    <div>
+        <div style="margin-bottom:20px;">
+            <h2 style="font-size:1.2rem; font-weight:700; color:#fff;">Visual Match Results</h2>
+            <span style="font-size:0.85rem; color:var(--text-muted);">Products matching detected shape, color palette, and design aesthetic</span>
+        </div>
+
+        {% if results %}
+        <div class="glass-card" style="margin-bottom:20px; border-left:4px solid var(--primary-cyan);">
+            <h4 style="font-size:0.95rem; color:#fff; margin-bottom:6px;"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary-cyan);"></i> AI Vision Analysis</h4>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; font-size:0.85rem; color:var(--text-muted);">
+                <div>Detected Category: <strong style="color:#fff;">{{ results.detected_category }}</strong></div>
+                <div>Detected Color: <strong style="color:#fff;">{{ results.detected_color }}</strong></div>
+                <div>Confidence Score: <strong style="color:var(--accent-emerald);">{{ results.confidence_score }}%</strong></div>
+            </div>
+        </div>
+
+        <div class="grid-3">
+            {% for prod in results.matching_products %}
+            <div class="product-card">
+                <div class="product-thumb">
+                    <img src="{{ prod.image_url }}" alt="{{ prod.title }}" />
+                </div>
+                <div class="product-info">
+                    <div class="product-title">{{ prod.title }}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto;">
+                        <div class="product-price">₹{{ prod.base_price|floatformat:0 }}</div>
+                        <a href="{% url 'product_detail' prod.slug %}" class="btn-outline" style="padding:4px 10px; font-size:0.8rem;">View</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-card" style="text-align:center; padding:40px;">
+            <i class="fa-solid fa-camera" style="font-size:3rem; color:var(--text-muted); margin-bottom:12px;"></i>
+            <h3>Upload an image to start visual search!</h3>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
